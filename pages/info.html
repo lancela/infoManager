@@ -1,0 +1,257 @@
+<!-- info.html -->
+<div>
+	<div class="info-manage">
+		<!-- 按钮组 -->
+		<select name="" id="" class="form-control pull-left" style="width: 300px"></select>
+		<div class="btns-div" style="display: inline-block;">
+			<button type="button" class="btn btn-success" data-toggle="modal" data-target="#infoModal">新增</button>
+			<button type="button" class="btn btn-danger">批量删除</button>
+		</div>
+		<!-- 表格组 -->
+		<div class="table-div">
+			<table class="table table-bordered text-center">
+				<thead class="text-center">
+					<tr>
+						<th class="text-center">编号</th>
+						<th class="text-center">文章标题</th>
+						<th class="text-center">所属栏目</th>
+						<th class="text-center">排列方式</th>
+						<th class="text-center">作者</th>
+						<th class="text-center">发布时间</th>
+						<th class="text-center">阅读次数</th>
+						<th class="text-center">操作</th>
+					</tr>
+				</thead>
+			 	<tbody>
+			 		<!-- <tr>
+			 			<td><input type="checkbox"/></td>
+			 			<td class="text-center">编号</td>
+						<td class="text-center">文章标题</td>
+						<td class="text-center">所属栏目</td>
+						<td class="text-center">排列方式</td>
+						<td class="text-center">作者</td>
+						<td class="text-center">发布时间</td>
+						<td class="text-center">阅读次数</td>
+			 			<td>
+			 				<i title="编辑" class="fa fa-pencil-square-o" aria-hidden="true"></i>
+			 				<i title="删除" class="fa fa-trash" aria-hidden="true"></i>
+			 			</td>
+			 		</tr> -->
+			 	</tbody>
+			</table>
+		</div>
+		<!-- 模态框 -->
+		<div class="modal fade" id="infoModal" style="display: none;">
+			<div class="modal-dialog">
+				<div class="modal-content" style="height: 627px;">
+					<div class="modal-header text-center">
+						<div class="backDiv pull-left" data-toggle="modal" data-target="#infoModal">
+							<i class="iconfont icon-zuo"></i>
+							<span>返回</span>
+						</div>
+						<div class="modal-title">
+							发布资讯
+						</div>
+					</div>
+					<div class="modal-body">
+						<form class="form">
+							<div class="form-group">
+								<label for="">标题</label>
+								<input type="text" name="infoTitle" class="form-control"/>
+							</div>
+							<div class="form-group">
+								<label for="">所属栏目</label>
+								<select name="infoCategory" class="form-control">
+									<!-- <option value="7514">123</option>
+									<option value="7609">3123</option>
+									<option value="7641">rtuhjty</option>
+									<option value="7675">Ename</option>
+									<option value="7677">Franklin</option>
+									<option value="7718">上官</option>
+									<option value="7758">whs</option>
+									<option value="7764">别删谢谢</option> -->
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="">列表样式</label>
+								<div class="radio">
+									<label for="style-one">
+										<input type="radio" name="infoList" id="style-one" value="style-one" />
+										<img style="height: 120px;width: 230px" src="./images/style-one.jpg" alt=""	 />
+									</label>
+									<label for="style-two">
+										<input type="radio" name="infoList" id="style-two" value="style-two" />
+										<img style="height: 120px;width: 230px" src="./images/style-two.jpg" alt="" />
+									</label>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="">正文</label>
+								<textarea name="infoContent" id="" cols="30" rows="4" class="form-control"></textarea>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<span class="messageSpan"></span>
+						<button class="btn btn-success btn-sm saveBtn">发 布</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		var infoTodo = '';
+		var $tbody = $('tbody');
+		// 查询数据所用的对象
+		var data = {
+		 	page : 0,
+		 	pageSize : 100,
+		 };
+		 // 添加更改数据所用的数据对象
+		 var infodata = {};
+		getAllcategory();
+		//查询栏目,将栏目的name追加到option 中
+		function getAllcategory(){
+			getAjax('/manager/category/findAllCategory','get',null,function(res){
+				var $modalSelect = $('#infoModal select');
+				var $select = $('.info-manage>select');
+				var selStr= ``;
+				var modalSelstr= ``;
+				var datas = Array.from(res.data);
+				
+				datas.forEach(function(item,index){
+					selStr=selStr+`<option data-id="`+item.id+`">`+item.name+`</option>`;
+					modalSelstr=modalSelstr+`<option data-id="`+item.id+`">`+item.name+`</option>`;
+				});
+				$select.html(selStr);
+				$modalSelect.html(modalSelstr);
+				data.categoryId=$('.info-manage option:selected').attr('data-id');
+				// 找到所有的可元栏目,之后显示对应栏目的文章
+				getAllinfo();
+			},function(){
+			});
+		}
+		$('select').on('change',function(){
+					data.categoryId=$('.info-manage option:selected').attr('data-id');
+					console.log(1);
+					getAllinfo();
+				});
+		// 展示响应的咨询
+		function getAllinfo(){
+			// data.categoryId=$('.info-manage option:selected').attr('data-id');
+			getAjax('/manager/article/findArticle','get',data,function(res){
+				var infoList = res.data.list;
+				var infoStr = '';
+				console.log(infoList);
+				infoList.forEach(function(item){
+					infoStr=infoStr + `
+					<tr>
+			 			<td><input value="`+item.id+`" type="checkbox"/></td>
+						<td class="text-center title">`+item.title+`</td>
+						<td class="text-center">`+item.category.name+`</td>
+						<td class="text-center">`+item.liststyle+`</td>
+						<td class="text-center">`+item.author+`</td>
+						<td class="text-center">`+item.publishtime+`</td>
+						<td class="text-center">`+item.readtimes+`</td>
+			 			<td>
+			 				<i title="编辑" data-content="`+item.content+`" class="fa fa-pencil-square-o" data-id=`+item.id+` aria-hidden="true"></i>
+			 				<i title="删除" class="fa fa-trash" aria-hidden="true" data-id=`+item.id+`></i>
+			 			</td>
+			 		</tr>
+					`;
+				});
+				// 选中tbody加内容
+				$('.table-div tbody').html(infoStr);
+			},function(error){
+				console.log("失败")
+			});
+		};
+		// 删除文章内容
+		$btn = $('i[title]');
+		$tbody.on('click',$btn,function(event){
+			// 删除数据
+			if($(event.target).attr('title')==='删除'){
+				var data = {};
+				data.id = $(event.target).attr('data-id');
+				getAjax('/manager/article/deleteArticleById','get',data,function(res){
+				console.log('删除成功');
+				alert('删除成功');
+				getAllinfo();
+				},function(error){
+				alert('删除失败');
+				console.log("删除失败");
+				});
+			}else if($(event.target).attr('title')==='编辑'){
+				//  点击修改按钮, 将info的内容放置模态框,给infodata加一个id,打开模态框,标记模态框的功能
+				infoTodo = '修改';
+				infodata.id = $(event.target).attr('data-id');
+
+				// 打开模态框
+				$('#infoModal').modal('show');
+
+				$('#infoModal .modal-body input').val($(event.target).parent().prevAll('.title').text());
+				$('#infoModal .modal-body textarea').val($(event.target).attr('data-content'));
+			}
+		});
+		//  批量删除
+		$('.info-manage .btns-div :last-child').click(function(){
+			var inputs = $('input');
+			inputs = Array.from(inputs);
+			var ids = inputs.filter(function(item){
+				return item.checked;
+			}).map(function(item){
+				return item.value;
+			});
+			console.log(ids);
+			var data ={};
+			data.ids = ids.join();
+			getAjax('/manager/article/batchDeleteArticle','post',data,function(res){
+				console.log('批量删除成功');
+				alert('批量删除成功');
+				getAllinfo();
+				},function(error){
+				console.log("批量删除失败");
+				});
+		});
+		//  点击添加按钮, 清空模态框,打开模态框,标记模态框的功能
+		$('.info-manage .btns-div :first-child').click(function(){
+			infoTodo = '添加';
+			$('#infoModal .modal-body input').val('');
+			$('#infoModal .modal-body select').val('');
+			$('#infoModal .modal-body [type = radio]').prop('checked',false);
+			$('#infoModal .modal-body textarea').val('');
+		});
+		
+		
+		//  点击模态框里的发布按钮 发布或修改信息
+		 $('.info-manage .modal-footer button').click(function(){
+		 	// $('.info-manage option:selected').attr('data-id');
+		 	infodata.title = $('#infoModal .modal-body [type=text]').val();
+		 	infodata.liststyle = $('#infoModal .modal-body [type = radio]').attr('id');
+		 	infodata.categoryId=$('#infoModal option:selected').attr('data-id');
+		 	infodata.content = $('#infoModal .modal-body textarea').val();
+		 	console.log(infodata);
+		 	if($('#infoModal .modal-body [type=text]').val()==''||$('#infoModal .modal-body textarea').val()==''||$('#infoModal option:selected').val()==''){
+				alert("请输入完整的数据");
+				return ;
+			}
+		 	if(infoTodo === "添加"){
+		 		delete infodata.id;
+		 	}
+		 	getAjax('/manager/article/saveOrUpdateArticle','post',infodata,function(res){
+				console.log('添加成功');
+				if(infoTodo === "添加"){
+			 		alert('添加成功');
+			 	}
+			 	if(infoTodo === "修改"){
+			 		alert('修改成功');
+			 	}
+				getAllinfo();
+				},function(error){
+				alert("添加失败");
+				});
+		 	$('#infoModal').modal('hide');
+		 	
+		 });
+	</script>
+</div>

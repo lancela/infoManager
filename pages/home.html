@@ -1,0 +1,205 @@
+<!-- home.html -->
+<div>
+
+	<div class="home-manage">
+		<div class="">
+			<div class="row" >
+				<div class="col-sm-3" >
+					<div id="container3"></div>
+				</div>
+				<div class="col-sm-6" >
+					<div id="container2"></div>
+				</div>
+				<div class="col-sm-3" >
+					<div id="container1"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+        Highcharts.seriesTypes.pie.prototype.animate = function(init) {
+			var series = this,
+				points = series.points,
+				startAngleRad = series.startAngleRad,
+				len = points.length,
+				anim = Highcharts.pick(series.options.animation && series.options.animation.duration, 1000),
+				step = anim / len;
+			if (!init) {
+				Highcharts.each(points, function(point, index) {
+					var graphic = point.graphic,
+						args = point.shapeArgs;
+					if (graphic) {
+						// start values
+						graphic.attr({
+							innerR: 0.1,
+							r: 0.1, // animate from inner radius (#779)
+							start: args.start,
+							end: args.end
+						});
+						// animate
+						setTimeout(function() {
+							graphic.animate({
+								innerR: (series.center[3] / 2) || 0,
+								r: args.r,
+								start: args.start,
+								end: args.end
+							}, series.options.animation);
+						}, index * step);
+					}
+				});
+				// delete this function to allow it only once
+				series.animate = null;
+			}
+		};
+		var colors = Highcharts.getOptions().colors,
+			data = [{
+				y: 13.33,
+				color: colors[0],
+				drilldown: {
+					data: [12],
+					color: colors[0]
+				}
+			}, {
+				y: 10.38,
+				color: colors[1],
+				drilldown: {
+					data: [6.3],
+					color: colors[1]
+				}
+			}, {
+				y: 24.03,
+				color: colors[2],
+				drilldown: {
+					data: [12],
+					color: colors[2]
+				}
+			}, {
+				y: 4.77,
+				color: colors[3],
+				drilldown: {
+					data: [2],
+					color: colors[3]
+				}
+			}],
+			browserData = [],
+			versionsData = [],
+			i,
+			j,
+			dataLen = data.length,
+			drillDataLen,
+			brightness;
+		// Build the data arrays
+		for (i = 0; i < dataLen; i += 1) {
+			// add browser data
+			browserData.push({
+				y: data[i].y,
+				color: data[i].color
+			});
+			// add version data
+			drillDataLen = data[i].drilldown.data.length;
+			for (j = 0; j < drillDataLen; j += 1) {
+				brightness = 0.2 - (j / drillDataLen) / 5;
+				versionsData.push({
+					y: data[i].drilldown.data[j],
+					color: Highcharts.Color(data[i].color).brighten(brightness).get()
+				});
+			}
+		}
+		// Create the chart
+		var chart = Highcharts.chart('container1', {
+			chart: {
+				type: 'pie'
+			},
+			title: {
+				text: 'XXX图展示'
+			},
+			subtitle: {
+				text: ''
+			},
+			yAxis: {
+				title: {
+					text: 'XXX图展示'
+				}
+			},
+			plotOptions: {
+				pie: {
+					animation: {
+						duration: 2000
+					},
+					dataLabels: {
+						enabled: false
+					},
+					shadow: false,
+					center: ['70%', '50%']
+				}
+			},
+			tooltip: {
+				valueSuffix: '%'
+			},
+			series: [{
+				name: 'Inner',
+				data: browserData,
+				size: '40%'
+			}, {
+				name: 'Outer',
+				data: versionsData,
+				size: '80%',
+				innerSize: '60%'
+			}]
+		});
+
+		// 全局配置，针对页面上所有图表有效
+		Highcharts.setOptions({
+			chart: {
+				backgroundColor: {
+					linearGradient: [0, 0, 500, 500],
+					stops: [
+						[0, 'rgb(255, 255, 255)'],
+						[1, 'rgb(240, 240, 255)']
+					]
+				},
+				borderWidth: 0,
+				plotBackgroundColor: 'rgba(255, 255, 255, 1)',
+				plotShadow: true,
+				plotBorderWidth: 1
+			}
+		});
+		var chart1 = new Highcharts.Chart({
+			chart: {
+				renderTo: 'container2',
+			},
+			title: {
+				text: 'XXX图展示'
+			},
+			xAxis: {
+				type: 'datetime'
+			},
+			yAxis: {
+				title:'柱状图展示'
+			},
+			series: [{
+				data: [29.9, 71.5, 396.4, 129.2, 144.0, 176.0, 135.6, 148.5, 416.4, 194.1, 95.6, 54.4],
+				pointStart: Date.UTC(2010, 0, 1),
+				pointInterval: 3600 * 1000 // one hour
+			}]
+		});
+		var chart2 = new Highcharts.Chart({
+			chart: {
+				renderTo: 'container3',
+				type: 'column'
+			},
+			title: {
+				text: 'XXX图展示'
+			},
+			xAxis: {
+				type: 'datetime'
+			},
+			series: [{
+				data: [29.9, 71.5, 396.4, 129.2, 144.0, 176.0, 135.6, 148.5, 416.4, 194.1, 95.6, 54.4],
+				pointStart: Date.UTC(2010, 0, 1),
+				pointInterval: 3600 * 1000 // one hour
+			}]
+		});
+		
+    </script>
+</div>

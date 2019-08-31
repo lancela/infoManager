@@ -1,0 +1,185 @@
+<!-- user.html -->
+<div>
+	<div class="user-manage">
+		<button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" style="margin-bottom: -20px">新增</button>
+		<div class="row ">
+		</div>
+	</div>
+	<!-- 模态框 -->
+	<div class="modal fade pull-right" id="myModal" aria-hidden="false" aria-labelledby="myMododalLabel">
+		<div class="modal-dialog">
+
+			<div class="modal-content">
+
+				<div class="modal-header">
+					<!-- <button class="pull-left" data-dismiss="modal">
+						
+					</button> -->
+					<i class="fa fa-angle-left pull-left fa-lg close" aria-hidden="true" data-dismiss="modal"> 关闭</i>
+					<h4 class="modal-title text-center" id="myModalLabel">
+						添加用户
+					</h4>
+				</div>
+
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="">用户名</label>
+						<input type="text" class="form-control username"/>
+					</div>
+					<div class="form-group">
+						<label for="">密码</label>
+						<input type="text" class="form-control password"/>
+					</div>
+					<div class="form-group">
+						<label for="">确认密码</label>
+						<input type="text" class="form-control"/>
+					</div>
+					<div class="form-group">
+						<label for="">真实姓名</label>
+						<input type="text" class="form-control nickname"/>
+					</div>
+					<div class="form-group">
+						<label for="">邮箱</label>
+						<input type="text" class="form-control email"/>
+					</div>
+				</div>
+				
+				<div class="modal-footer" >
+					<button class="btn btn-primary" data-toggle="modal" data-target="#myModal">添加</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		var obj ={
+			enabled:true,
+		};
+		var toDo = '';
+		getAlluser();
+		// 查找所有用户并展示在页面上
+		function getAlluser(){
+			getAjax('/manager/user/findAllUser','get',null,function(res){
+				console.log(res,"用户查询成功");
+				var data = Array.from(res.data);
+				console.log(data);
+				var str = '';
+				data.forEach(function(item,index){
+					// if(index>=0&&index<14){
+						str=str+`
+							<div class="col-sm-1 col-md-4 userexample" style=" padding: 50px;">
+								<div style="background-color: #fff; box-shadow: 10px 10px 7px #ccc;">
+									<img src="./images/logo.png" class="img-circle center-block" alt="" style="width: 100px;height: 100px;"/>
+									
+									<div class="input-group row " style="width: 100%">
+										<label for="真实名" class="col-sm-6 text-right" style="line-height: 35px">用户名
+										</label>
+										<div class="col-sm-6">
+											<p class="form-control-static username">`+item.username+`</p>
+										</div>
+									</div>
+									<div class="input-group row " style="width: 100%">
+										<label for="真实名" class="col-sm-6 text-right" style="line-height: 35px">真实名
+										</label>
+										<div class="col-sm-6">
+											<p class="form-control-static nickname">`+item.nickname+`</p>
+										</div>
+									</div>
+									<div class="input-group row " style="width: 100%">
+										<label for="真实名" class="col-sm-6 text-right" style="line-height: 35px">注册时间
+										</label>
+										<div class="col-sm-6">
+											<p class="form-control-static">`+item.regTime+`</p>
+										</div>
+									</div>
+									<div class="input-group row " style="width: 100%">
+										<label for="真实名" class="col-sm-6 text-right" style="line-height: 35px">邮箱
+										</label>
+										<div class="col-sm-6">
+											<p class="form-control-static email">`+item.email+`</p>
+										</div>
+									</div>
+									<div class="input-group row " style="width: 100%">
+										<label for="真实名" class="col-sm-6 text-right" style="line-height: 35px">状态
+										</label>
+										<div class="col-sm-6 switch">
+											<input type="checkbox" checked class="checkbox" value="`+item.enabled+`"/>
+										</div>
+									</div>
+									<button class="btn btn-info btn-block" title="修改" user-id="`+item.id+`">修改此用户</button>
+									<button class="btn btn-waring btn-block" title="删除" user-id="`+item.id+`">删除此用户</button>
+								</div>
+							</div>
+						`;
+					// }
+					if((index+1)%3===0){
+						str=str+`<div class="clearfix visible-lg visible-md visible-sm"></div>`;
+					}
+				});
+				$('.user-manage .row').html(str);
+				$(".checkbox").bootstrapSwitch({  
+		//         	onText : "",      // 设置ON文本  
+		//         	offText : "下线",    // 设置OFF文本  
+		            onColor : "success",// 设置ON文本颜色     (info/success/warning/danger/primary)  
+		            offColor : "danger",  // 设置OFF文本颜色        (info/success/warning/danger/primary)  
+		            size : "normal",    // 设置控件大小,从小到大  (mini/small/normal/large)  
+		            handleWidth:"30",//设置控件宽度
+		        });
+			},function(error){
+				console.log("用户查询失败");
+
+			});
+			
+		}
+		// 点击添加按钮
+		$('.user-manage>button').click(function(){
+			toDo = '添加';
+		});
+		// 添加or修改用户
+		$('.modal-footer>button').click(function(){
+			obj.username = $('.modal-body .username').val();
+			obj.password = $('.modal-body .password').val();
+			obj.nickname = $('.modal-body .nickname').val();
+			obj.email = $('.modal-body .email').val();
+			if(toDo === '添加'){
+				delete obj.id;
+			};
+			getAjax('/manager/user/saveOrUpdateUser','post',obj,function(res){
+				console.log(res,'用户添加或修改成功');
+				getAlluser();
+				if(toDo === '添加'){alert("用户添加成功");}
+				if(toDo === '修改'){alert("用户修改成功");}
+			},function(error){
+				console.log("用户添加失败");
+			});
+		});
+		// 删除用户
+		$('.user-manage').on('click',$('.userexample button'),function(){
+		// $('.userexample button').on('click',function(){
+			if($(event.target).attr('title')==='删除'){
+				console.log($(event.target).attr('user-id'));
+				var data = {};
+				data.id = $(event.target).attr('user-id');
+				getAjax('/manager/user/deleteUserById','get',data,function(res){
+					console.log(res,'用户删除成功');
+					getAlluser();
+					alert("用户删除成功");
+				},function(error){
+					console.log("用户删除失败");
+				});
+			}else if($(event.target).attr('title')==='修改'){
+				$('#myModal').modal('show');
+				toDo = '修改';
+				obj.id = $(event.target).attr('user-id');
+				console.log($(event.target).parent().find('.username'));
+				$('.modal-body .username').val($(event.target).parent().find('.username').text());
+				$('.modal-body .password').val('');
+				$('.modal-body .nickname').val($(event.target).parent().find('.nickname').text());
+				$('.modal-body .email').val($(event.target).parent().find('.email').text());
+			}
+			
+		});
+		
+		
+	</script>
+</div>

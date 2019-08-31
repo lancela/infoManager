@@ -1,0 +1,268 @@
+<div>
+		<script>
+		// 获取数据
+		// 总页数
+		var totalpage = 0;
+		// 当前页数
+		var thisPage = 1;
+		var itemId='';
+		var toDo = '';
+		var $tbody = $('tbody');
+		var $select = $('.modal select');
+		var obj = {};
+		// 点击分页按钮获得当前分页
+		$('.fenye').on('click',$('.fenye a'),function(){
+			if($(event.target).attr('data-todo')==='page'){
+				thisPage =$(event.target).attr('data-page');
+			}
+			if($(event.target).attr('data-todo')==='prepage'){
+				thisPage = (thisPage==1)?1:thisPage-1;
+			}
+			if($(event.target).attr('data-todo')==='nextpage'){
+				thisPage = (thisPage==totalpage)?totalpage:thisPage+1;
+			}
+			if(thisPage==1){
+				console.log("111");
+				$('.pagination>:first-child').addClass("disabled");
+				console.log($('.pagination>:first-child'),'111');
+			}else if(thisPage == totalpage){
+				$('.pagination>:last-child').addClass("disabled");
+			}else{
+				$('.pagination>:first-child').removeClass("disabled");
+				$('.pagination>:last-child').removeClass("disabled");
+			}
+			getAllcategory();
+		});
+		// 点击上下分页按钮修改当前分页
+		
+		getAllcategory();
+		function getAllcategory(){
+			getAjax('/manager/category/findAllCategory','get',null,function(res){
+				console.log(res.data);
+				var str = '';
+				var selStr= `<option value="">请选择</option>`;
+				// 从后台拿到的数据
+				var data = Array.from(res.data);
+				// 确定总页数
+				totalpage = parseInt(data.length/5)+1;
+				// console.log(totalpage); //16
+				// 将分页的样式设成 totalpage 页数
+				var $fenye = $('.fenye .pagination');
+				var i = 1;
+				var fenyeStr = '<li><a class="prepage"  data-todo="prepage" href="#">&laquo;</a></li>';
+				for(i; i<=totalpage;i++){
+					fenyeStr = fenyeStr + '<li><a class="page" data-todo="page" data-page="'+i+'" href="#">'+i+'</a></li>'
+				}
+				fenyeStr = fenyeStr + '<li><a class="nextpage" data-todo="nextpage" href="#">&raquo;</a></li>';
+				$fenye.html(fenyeStr);
+				data.forEach(function(item,index){
+				 	selStr=selStr+`<option myid="`+item.id+`">`+item.name+`</option>`;
+					var page = 0;
+					// 只显示5条数据0-4 5-9 10-14 / 1-5 6-10 11-15  i-1*5+1 i*5
+					// console.log(item.parent.id);
+					item.parent = (item.parent===null)?'-':item.parent.name;
+					// if(index<=4){
+					console.log(thisPage,"1");
+					// console.log((thisPage-1)*5+1);
+					// console.log(thisPage*5);
+					if((((thisPage-1)*5)<=index)&&index<(thisPage*5)){
+					// if((((14-1)*5)<index)&&index<=(14*5)){
+						str = str+`<tr>
+				 			<td><input value="`+item.id+`" type="checkbox"/></td>
+				 			<td class="name">`+item.name+`</td>
+				 			<td class="parent">`+item.parent+`</td>
+				 			<td class="comment">`+item.comment+`</td>
+				 			<td>
+				 				<i data-toggle="modal" data-target="#myModal" title="编辑" class="fa fa-pencil-square-o" aria-hidden="true" dataId="`+item.id+`"></i>
+				 				<i title="删除" class="fa fa-trash" aria-hidden="true" dataId="`+item.id+`"></i>
+				 			</td>
+				 		</tr>`;
+				 		// selStr=selStr+`<option myid="`+item.id+`">`+item.name+`</option>`;
+					}
+				});
+				$tbody.html(str);
+				$select.html(selStr);
+			},
+			function(error){
+				console.log(error);
+			});
+		}
+		
+		// 模态框里添加数据或修改数据
+		$('.modal-footer :first-child').click(function(){
+			if($('.modal-body input').val()==''||$('.modal-body textarea').val()==''||$('.modal-body option:selected').val()==''){
+				alert("请输入完整的数据");
+				return ;
+			}
+			obj.id = itemId;
+			obj.name = $('.modal-body input').val();
+			obj.comment = $('.modal-body textarea').val();
+			obj.parent = $('.modal-body select').val();
+			obj.parentId = $('.modal-body option:selected').attr('myid');
+			console.log(obj);
+			if(toDo == '添加'){
+				delete obj.id;
+			}
+			// 添加数据
+			getAjax('/manager/category/saveOrUpdateCategory','post',obj,function(res){
+				console.log(res,"保存或修改成功");
+				if(toDo == '添加'){
+					alert("添加数据成功");
+				}
+				if(toDo == '修改'){
+					alert("修改数据成功");
+				}
+				$("#myModal").modal('hide');
+				getAllcategory();
+			},function(error){
+				console.log(error);
+			});
+			
+		});
+
+		// 添加数据(点击添加数据按钮)
+		$('.btns-div :first-child').click(function(){
+			toDo = '添加';
+			$('.modal-body input').val('');
+			$('.modal-body select').val('');
+			$('.modal-body textarea').val('');
+			
+		});
+
+		//事件代理处理删除单条数据和按打开修改按钮
+		$btn = $('i[title]');
+		$tbody.on('click',$btn,function(event){
+			// 删除数据
+			if($(event.target).attr('title')==='删除'){
+				var data = {};
+				data.id = $(event.target).attr('dataid');
+				getAjax('/manager/category/deleteCategoryById','get',data,function(res){
+				console.log('删除成功');
+				alert('删除成功');
+				getAllcategory();
+				},function(error){
+				console.log("删除失败");
+				});
+			}else if($(event.target).attr('title')==='编辑'){
+				toDo = '修改';
+				itemId = $(event.target).attr('dataid');
+				console.log($(event.target).parent().prevAll('.name'));
+				obj.name = $('.modal-body input').val($(event.target).parent().prevAll('.name').text());
+				obj.comment = $('.modal-body textarea').val($(event.target).parent().prevAll('.comment').text());
+				obj.parent = $('.modal-body select').val($(event.target).parent().prevAll('.parent').text());
+			}
+
+
+		});
+		
+		// 批量删除
+		$('.btns-div :last-child').click(function(){
+			var inputs = $('input');
+			inputs = Array.from(inputs);
+			var ids = inputs.filter(function(item){
+				return item.checked;
+			}).map(function(item){
+				return item.value;
+			});
+			// console.log(ids);
+			var data ={};
+			data.ids = ids.join();
+			getAjax('/manager/category/batchDeleteCategory','post',data,function(res){
+				console.log('批量删除成功');
+				alert('批量删除成功');
+				getAllcategory();
+				},function(error){
+				console.log("批量删除失败");
+				});
+		});
+	</script>
+
+	
+	<!-- categoty.html -->
+	<div class="categoty-manage">
+		<!-- 按钮组 -->
+		<div class="btns-div ssss" style="">
+			<button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal">新增</button>
+			<button type="button" class="btn btn-danger">批量删除</button>
+		</div>
+		<!-- 表格组 -->
+		<div class="table-div" style="">
+			<table class="table table-bordered text-center table-striped">
+				<thead class="text-center">
+					<tr>
+						<th class="text-center">编号</th>
+						<th class="text-center">名称</th>
+						<th class="text-center">父栏目</th>
+						<th class="text-center">描述</th>
+						<th class="text-center">操作</th>
+					</tr>
+				</thead>
+			 	<tbody>
+			 		<!-- <tr>
+			 			<td><input type="checkbox"/></td>
+			 			<td>1</td>
+			 			<td>1</td>
+			 			<td>1</td>
+			 			<td>
+			 				<i title="编辑" class="fa fa-pencil-square-o" aria-hidden="true"></i>
+			 				<i title="删除" class="fa fa-trash" aria-hidden="true"></i>
+			 			</td>
+			 		</tr> -->
+			 	</tbody>
+			</table>
+		</div>
+		<!-- 分页按钮 -->
+		<div class="fenye">
+		<ul class="pagination pull-right">
+			<!-- <li class=""><a href="#">&laquo;</a></li>
+			<li><a href="#">1</a></li>
+			<li><a href="#">2</a></li>
+			<li><a href="#">3</a></li>
+			<li><a href="#">4</a></li>
+			<li><a href="#">6</a></li>
+			<li class=""><a href="#">&raquo;</a></li> -->
+		</ul>
+	</div>
+	</div>
+	<!-- 模态框 -->
+	<div class="modal fade pull-right" id="myModal" aria-hidden="false" aria-labelledby="myMododalLabel">
+		<div class="modal-dialog">
+
+			<div class="modal-content">
+
+				<div class="modal-header">
+					<!-- <button class="pull-left" data-dismiss="modal">
+						
+					</button> -->
+					<i class="fa fa-angle-left pull-left fa-lg close" aria-hidden="true" data-dismiss="modal"> 关闭</i>
+					<h4 class="modal-title text-center" id="myModalLabel">
+						添加或修改栏目
+					</h4>
+				</div>
+
+				<div class="modal-body">
+					<div class="form-group">
+							<label for="">栏目名称</label>
+							<input type="text" class="form-control"/>
+						</div>
+						<div class="form-group">
+							<label for="">父栏目</label>
+							<div class="form-group">
+								<select name="" id="" class="form-control">
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="">栏目描述</label>
+							<textarea name="" id="" class="form-control" rows="5"></textarea>
+						</div>
+				</div>
+
+				<div class="modal-footer">
+					<button class="btn btn-primary" >提交</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>

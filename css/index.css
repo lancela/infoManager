@@ -1,0 +1,123 @@
+/*index.htMl的样式 全局样式*/
+*{
+	margin:0;
+	padding: 0;
+}
+article,nav,header,img{
+	display: block;
+}
+html,body{
+	height: 100%;
+}
+body{
+	display: flex;
+}
+/*左侧固定*/
+.info-left{
+	width:200px;
+}
+/*右侧*/
+.info-right{
+	flex:1;
+	/*background-color: pink;*/
+}
+.navbar-brand i{
+	margin:0px 20px 0px 50px;
+}
+.navbar-brand i span{
+	margin-left: -15px;
+	margin-top: -18px;
+	background-color: red;
+}
+/*头部*/
+.info-left>header,.info-right>header{
+	height: 60px;
+	background-color: #ccc;
+}
+.info-right .info-content{
+	height: calc(100% - 60px);
+	overflow: auto;
+	padding: 10px;
+
+}
+/*左侧头部*/
+.info-left>header{
+	background-color: #3d556d;
+	line-height: 60px;
+	font-size: 20px;
+	color: white;
+}
+.info-left>header img {
+	float: left;
+	width: 40px;
+	height: 40px;
+	margin-top: 10px;
+	margin-left: 10px;
+	margin-right: 10px
+}
+/*nav*/
+.info-left nav {
+	height: calc(100% - 60px);
+	border-right: 1px solid #ccc;
+}
+.info-left li {
+	line-height: 35px;
+	padding: 5px 10px;
+	border-bottom: 1px solid #ccc;
+
+}
+.info-left li:hover{
+	color: #3d556d;
+	background-color: #ccc;
+}
+.info-left li i:first-child{
+	margin-right: 10px;
+}
+.info-left li i:last-child{
+	float: right;
+	line-height: 35px;
+}
+
+/**/
+.table-div{
+	margin-top: 10px;
+	
+}
+/**/
+.table-div td i{
+	cursor: pointer;;
+	margin-right: 10px;
+}
+.table-div td i:last-child{
+	margin-right: 0px;
+}
+.table-div td i[title=编辑]{
+	color: #5cb85c;
+}
+.table-div td i[title=删除]{
+	color: #c9302c;
+}
+/*模态框的设置*/
+.modal-header>i{
+	margin-top: 10px;
+	margin-left: 20px;
+}
+
+
+
+
+/*首页的样式设置*/
+.home-manage .container{
+	position:relative;
+}
+.home-manage #container1,.home-manage #container2,.home-manage #container3{
+	height: 300px;
+}
+.categoty-manage .btns-div{
+	position: fixed;
+	top:80px ;
+	width: 81%;
+}
+.categoty-manage .table-div{
+	margin-top: 50px;
+}
